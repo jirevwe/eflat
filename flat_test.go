@@ -190,3 +190,63 @@ func TestFlatten(t *testing.T) {
 		})
 	}
 }
+
+func TestFlattenWithOperator(t *testing.T) {
+	tests := []struct {
+		name  string
+		given string
+		want  map[string]interface{}
+	}{
+		/////////////////// string operator
+		{
+			name:  "nested string value",
+			given: `{"name":{"$eq":"raymond"}}`,
+			want: map[string]interface{}{
+				"name": map[string]interface{}{
+					"$eq": "raymond",
+				},
+			},
+		},
+
+		/////////////////// number operator
+		{
+			name:  "double nested string value",
+			given: `{"person":{"age":{"$gte":10}}}`,
+			want: map[string]interface{}{
+				"person.age": map[string]interface{}{
+					"$gte": float64(10),
+				},
+			},
+		},
+
+		/////////////////// array operator
+		{
+			name:  "double nested string value",
+			given: `{"person":{"age":{"$in":[10, 20]}}}`,
+			want: map[string]interface{}{
+				"person.age": map[string]interface{}{
+					"$in": []interface{}{float64(10), float64(20)},
+				},
+			},
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			var given map[string]interface{}
+			err := json.Unmarshal([]byte(test.given), &given)
+			if err != nil {
+				t.Errorf("failed to unmarshal JSON: %v", err)
+			}
+
+			got, err := Flatten(given)
+			if err != nil {
+				t.Errorf("failed to flatten: %+v", err)
+			}
+
+			if !reflect.DeepEqual(got, test.want) {
+				t.Errorf("mismatch:\ngot:  %+v\nwant: %+v", got, test.want)
+			}
+		})
+	}
+}

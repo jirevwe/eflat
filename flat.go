@@ -1,6 +1,9 @@
 package eflat
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 func Flatten(input map[string]interface{}) (map[string]interface{}, error) {
 	return flatten("", input)
@@ -11,11 +14,11 @@ func flatten(prefix string, nested interface{}) (map[string]interface{}, error) 
 
 	switch n := nested.(type) {
 	case map[string]interface{}:
-		fmt.Printf("nested: %+v\n", n)
 		for key, value := range n {
-			//if strings.HasPrefix(prefix, "$") {
-			//	continue
-			//}
+			if strings.HasPrefix(key, "$") {
+				//fmt.Printf("prefix: %+v\n", key)
+				continue
+			}
 
 			m, err := flatten(key, value)
 			if err != nil {
